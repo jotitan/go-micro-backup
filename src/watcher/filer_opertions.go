@@ -32,6 +32,7 @@ func (rom filerOperationManager)findBackupFolder(path string)(string,string,erro
 
 func (rom filerOperationManager) CopyFolder(path string) {
 	backupFolder,sourceFolder,_ := rom.findBackupFolder(path)
+	log.Println("RECEIVE",path,backupFolder,sourceFolder)
 	filename := filepath.Join(backupFolder,strings.Replace(path,sourceFolder,"",-1))
 
 	if err := os.MkdirAll(filename,os.ModePerm) ; err != nil {
