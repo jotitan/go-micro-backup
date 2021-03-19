@@ -124,7 +124,6 @@ func isOperation(op fsnotify.Op,mask fsnotify.Op)bool{
 // To folder creation, do something for creation. To file creation, write, do something on write (isCreation == false)
 // Write file work in two steps : open file to write inside and close. Only copy when second one appends
 func (wm * WatchManager)create(path string, isCreation bool){
-	log.Println("CREATE FCT",path,isCreation)
 	if stat,err := os.Lstat(path) ; err == nil {
 		if stat.IsDir() {
 			if isCreation {
@@ -132,7 +131,7 @@ func (wm * WatchManager)create(path string, isCreation bool){
 				wm.copyFolder(path, true)
 			}
 		} else {
-			if !isCreation /*&& wm.isWriteDone(path)*/{
+			if !isCreation && wm.isWriteDone(path){
 				wm.copyFile(path)
 			}
 		}
