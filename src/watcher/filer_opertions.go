@@ -13,7 +13,6 @@ import (
 // Send operations by rest API
 type filerOperationManager struct{
 	watchersConf config.Config
-	backupFolder string
 }
 
 func NewFilerOperationManager(conf config.Config)OperationManager {
@@ -31,11 +30,15 @@ func (rom filerOperationManager)findBackupFolder(path string)(string,string,erro
 }
 
 func (rom filerOperationManager) CopyFolder(path string) {
-	backupFolder,sourceFolder,_ := rom.findBackupFolder(path)
+	backupFolder,sourceFolder,err := rom.findBackupFolder(path)
+	if err != nil {
+		log.Println("Impossible to copy folder ",path,err)
+		return
+	}
 	filename := filepath.Join(backupFolder,strings.Replace(path,sourceFolder,"",-1))
 
 	if err := os.MkdirAll(filename,os.ModePerm) ; err != nil {
-		log.Fatal("Impossible to create folder",filename,err)
+		log.Println("Impossible to create folder",filename,err)
 		return
 	}
 	log.Println("CREATE FOLDER",filename)
@@ -56,7 +59,11 @@ func (rom filerOperationManager) CopyFolder(path string) {
 
 // The path is clean and relative
 func (rom filerOperationManager) CopyFile(path string){
-	backupFolder,sourceFolder,_ := rom.findBackupFolder(path)
+	backupFolder,sourceFolder,err := rom.findBackupFolder(path)
+	if err != nil {
+		log.Println("Impossible to copy file ",path,err)
+		return
+	}
 	filename := filepath.Join(backupFolder,strings.Replace(path,sourceFolder,"",-1))
 	if out,err := os.OpenFile(filename,os.O_CREATE|os.O_RDWR|os.O_TRUNC,os.ModePerm) ; err == nil {
 		defer out.Close()
@@ -70,24 +77,29 @@ func (rom filerOperationManager) CopyFile(path string){
 
 // The path is clean and relative
 func (rom filerOperationManager) Delete(path string){
-	filename := filepath.Join(rom.backupFolder,path)
+	backupFolder,sourceFolder,err := rom.findBackupFolder(path)
+	if err != nil {
+		log.Println("Impossible to delete ",path,err)
+		return
+	}
+	filename := filepath.Join(backupFolder,strings.Replace(path,sourceFolder,"",-1))
 
 	if stat,err := os.Lstat(filename) ; err == nil {
 		if stat.IsDir() {
 			if err := os.RemoveAll(filename) ; err == nil {
 				log.Println("DELETE FOLDER", path)
 			}else{
-				log.Fatal("Impossible to Delete folder",path,err)
+				log.Println("Impossible to delete folder ",path,err)
 			}
 		}else{
 			if err := os.Remove(filename) ; err == nil {
 				log.Println("DELETE FILE",path)
 			}else{
-				log.Fatal("Impossible to Delete file",path,err)
+				log.Println("Impossible to delete file ",path,err)
 			}
 		}
 	}else{
-		log.Fatal("Impossible to Delete",path,err)
+		log.Println("Error : impossible to delete ",path,err)
 	}
 }
 

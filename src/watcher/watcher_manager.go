@@ -77,7 +77,7 @@ func (wm WatchManager)Launch(){
 	go func(){
 		for {
 			if value,hasMore := <- wm.watcher.Events ; hasMore {
-				log.Println(value)
+				//log.Println(value)
 				switch {
 				case isCreate(value.Op):
 					wm.create(value.Name,true)
@@ -164,12 +164,4 @@ func (wm * WatchManager)copyFile(path string){
 
 func (wm * WatchManager)delete(path string){
 	wm.operationManager.Delete(path)
-	// Check in backup folder if it's a folder, if yes, remove recursive, otherwise, remove file
-	/*if stat,err := os.Lstat(path) ; err == nil {
-		if stat.IsDir() {
-			wm.watcher.Remove(path)
-		}
-	}else{
-		log.Fatal("Impossible to Delete",path,err)
-	}*/
 }
