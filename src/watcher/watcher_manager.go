@@ -77,7 +77,7 @@ func (wm WatchManager)Launch(){
 	go func(){
 		for {
 			if value,hasMore := <- wm.watcher.Events ; hasMore {
-				//log.Println(value)
+				log.Println(value)
 				switch {
 				case isCreate(value.Op):
 					wm.create(value.Name,true)
