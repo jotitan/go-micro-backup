@@ -26,10 +26,11 @@ jobs:
         export GOOS=linux
         export GOARCH=arm
         go build -o micro_backup main.go
+        go build -o backup_server backup_server.go
         cd ../../
         mkdir artifacts
         echo Copy backup artifact in artifacts/
-        mv src/main/micro_backup artifacts
+        mv src/main/micro_backup src/main/backup_server artifacts
 
     # Upload artifact
     - uses: actions/upload-artifact@v1

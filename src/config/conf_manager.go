@@ -11,6 +11,7 @@ type Config struct {
 		WatchedFolder string `json:"watched_folder"`
 		BackupFolder string `json:"backup_folder"`
 	} `json:"watchers"`
+	BackupRestUrl string `json:"backup_rest_url"`
 }
 
 func NewConfig(path string) Config{
