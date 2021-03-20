@@ -36,7 +36,7 @@ func (rom restOperationManager) CopyFolder(path string) {
 }
 
 func (rom restOperationManager) Delete(path string){
-	log.Println("Delete",path)
+	log.Println("Rest Delete",path)
 	restUrl := fmt.Sprintf("%s?path=%s",rom.url,path)
 	r,_ := http.NewRequest(http.MethodDelete,restUrl,nil)
 	if _,err := http.DefaultClient.Do(r); err != nil {

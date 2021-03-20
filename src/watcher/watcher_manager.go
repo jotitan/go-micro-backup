@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"errors"
+	"github.com/jotitan/fsnot-poc/chanel"
 	"github.com/jotitan/fsnot-poc/config"
 
 	"github.com/fsnotify/fsnotify"
@@ -15,28 +16,20 @@ type WatchManager struct {
 	watcher *fsnotify.Watcher
 	// for each watch folder,
 	conf config.Config
-	// Store file which is currently written.
-	checkWriteDone map[string]struct{}
 	operationManager OperationManager
-}
-
-func (wm * WatchManager)isWriteDone(path string)bool{
-	if _,exist := wm.checkWriteDone[path] ; exist {
-		delete(wm.checkWriteDone,path)
-		return true
-	}
-	wm.checkWriteDone[path] = struct{}{}
-	return false
+	agregateCopyFileCHanel *chanel.AgregateChanel
 }
 
 func NewWatchManager(conf config.Config)(*WatchManager,error){
 	if watcher,err := fsnotify.NewWatcher() ; err == nil {
-		return  &WatchManager{
-			conf:conf,
-			watcher:watcher,
-			checkWriteDone: make(map[string]struct{}),
-			operationManager: NewRestOperationManager(conf),
-		},nil
+		wm := &WatchManager{
+			conf:                   conf,
+			watcher:                watcher,
+			operationManager:       NewRestOperationManager(conf),
+			agregateCopyFileCHanel: chanel.NewAgregateChanel(3),
+		}
+		go wm.watchNoDuplicateFile()
+		return wm,nil
 	}else{
 		return nil,err
 	}
@@ -131,12 +124,19 @@ func (wm * WatchManager)create(path string, isCreation bool){
 				wm.copyFolder(path, true)
 			}
 		} else {
-			if !isCreation && wm.isWriteDone(path){
-				wm.copyFile(path)
+			if !isCreation {
+				wm.agregateCopyFileCHanel.Add(path)
+				//wm.copyFile(path)
 			}
 		}
 	}else{
 		log.Println("ERROR READ FILE",err)
+	}
+}
+
+func (wm *WatchManager)watchNoDuplicateFile(){
+	for {
+		wm.copyFile(wm.agregateCopyFileCHanel.Get())
 	}
 }
 
