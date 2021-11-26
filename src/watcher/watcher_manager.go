@@ -15,9 +15,9 @@ import (
 type WatchManager struct {
 	watcher *fsnotify.Watcher
 	// for each watch folder,
-	conf config.Config
-	operationManager OperationManager
-	agregateCopyFileCHanel *chanel.AgregateChanel
+	conf                   config.Config
+	operationManager       OperationManager
+	agregateCopyFileChanel *chanel.AgregateChanel
 }
 
 func NewWatchManager(conf config.Config)(*WatchManager,error){
@@ -26,7 +26,7 @@ func NewWatchManager(conf config.Config)(*WatchManager,error){
 			conf:                   conf,
 			watcher:                watcher,
 			operationManager:       NewRestOperationManager(conf),
-			agregateCopyFileCHanel: chanel.NewAgregateChanel(3),
+			agregateCopyFileChanel: chanel.NewAgregateChanel(3),
 		}
 		go wm.watchNoDuplicateFile()
 		return wm,nil
@@ -125,8 +125,7 @@ func (wm * WatchManager)create(path string, isCreation bool){
 			}
 		} else {
 			if !isCreation {
-				wm.agregateCopyFileCHanel.Add(path)
-				//wm.copyFile(path)
+				wm.agregateCopyFileChanel.Add(path)
 			}
 		}
 	}else{
@@ -136,7 +135,7 @@ func (wm * WatchManager)create(path string, isCreation bool){
 
 func (wm *WatchManager)watchNoDuplicateFile(){
 	for {
-		wm.copyFile(wm.agregateCopyFileCHanel.Get())
+		wm.copyFile(wm.agregateCopyFileChanel.Get())
 	}
 }
 
